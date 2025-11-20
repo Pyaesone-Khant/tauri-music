@@ -1,17 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
-import {
-	isPermissionGranted,
-	requestPermission,
-} from "@tauri-apps/plugin-notification";
 import { useEffect, useState } from "react";
 import "./App.css";
 import reactLogo from "./assets/react.svg";
+import { NotificationButton } from "./components";
 
 function App() {
 	const [greetMsg, setGreetMsg] = useState("");
 	const [name, setName] = useState("");
-
-	const [permissionGranted, setPermissionGranted] = useState(false);
 
 	async function greet() {
 		// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -19,15 +14,19 @@ function App() {
 	}
 
 	useEffect(() => {
-		(async () => {
-			const granted = await isPermissionGranted();
-
-			if (!granted) {
-				requestPermission().then((permission) => {
-					setPermissionGranted(permission === "granted");
-				});
-			}
-		})();
+		if ("Notification" in window) {
+			console.log("Notifications are supported!");
+			Notification.requestPermission().then((permission) => {
+				console.log(`Notification permission: ${permission}`);
+				if (permission === "granted") {
+					console.log("Noti permission granted!");
+				} else {
+					console.log("Notification permission denied.");
+				}
+			});
+		} else {
+			console.log("Notifications are not supported in this browser.");
+		}
 	}, []);
 
 	return (
@@ -74,6 +73,15 @@ function App() {
 				<button type="submit">Greet</button>
 			</form>
 			<p>{greetMsg}</p>
+			<div
+				style={{
+					maxWidth: 400,
+					paddingInline: 16,
+					margin: "0 auto",
+				}}
+			>
+				<NotificationButton />
+			</div>
 		</main>
 	);
 }
