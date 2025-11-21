@@ -1,5 +1,5 @@
-import { convertFileSrc } from "@tauri-apps/api/core";
-import { open, OpenDialogOptions } from "@tauri-apps/plugin-dialog";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import {
 	ListMusic,
 	Music,
@@ -10,14 +10,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../libs/cn";
-import { formatTime } from "../libs/utils";
+import { extractSpecificMetadata, formatTime } from "../libs/utils";
+import { CoverImage } from "./components/CoverImage";
 import "./style.css";
-
-type Song = {
-	path: string;
-	url: string;
-	name: string;
-};
 
 export function Player() {
 	const [playlist, setPlaylist] = useState<Song[]>([]);
@@ -33,6 +28,8 @@ export function Player() {
 
 	const currentSong = playlist[currentSongIndex] || null;
 
+	console.log(playlist);
+
 	/**
 	 * Loads and plays a song by index.
 	 * @param {number} index
@@ -42,6 +39,8 @@ export function Player() {
 			if (index >= 0 && index < playlist.length) {
 				setCurrentSongIndex(index);
 				setIsPlaying(false); // Reset playback state temporarily
+				setCurrentTime(0);
+				setDuration(0);
 
 				// Ensure the audio element exists and is linked to the new source
 				if (audioRef.current) {
@@ -126,18 +125,21 @@ export function Player() {
 	// --- File Dialog and Loading ---
 	const selectMusicFiles = async () => {
 		setStatusMessage("Opening file dialog...");
+		let initialPlaylistLength = playlist.length;
+
 		try {
 			/** @type {string | string[] | null} */
-			const selected = (await open({
+			// Use the locally defined 'open' function (which handles the Tauri global fallback)
+			const selected = await open({
 				multiple: true,
-				title: "Select Music Files",
+				title: "Select Music Files (mp3, wav, ogg, flac) ",
 				filters: [
 					{
 						name: "Audio",
 						extensions: ["mp3", "wav", "ogg", "flac"],
 					},
 				],
-			})) as OpenDialogOptions;
+			});
 
 			if (!selected) {
 				setStatusMessage(
@@ -146,29 +148,49 @@ export function Player() {
 				return;
 			}
 
-			console.log(selected);
-
 			// Ensure selected is always an array of paths
 			const paths = Array.isArray(selected) ? selected : [selected];
 
-			const newSongs = paths.map((path) => ({
-				path,
-				url: convertFileSrc(path), // Convert the native path to a Tauri-compatible asset URL
-				name: path.split(/[/\\]/).pop(), // Extract the file name
-			}));
+			setStatusMessage(
+				`Found ${paths.length} songs. Fetching metadata...`
+			);
 
-			// Add new songs to the playlist
-			setPlaylist((prev) => [...prev, ...newSongs]);
-			setStatusMessage(`${newSongs.length} songs added to the playlist.`);
+			const metadataPromises = paths.map((path) => getMetadata(path));
+			const metadataResults = await Promise.all(metadataPromises);
 
-			// If no song is currently playing, load the first one added
-			if (currentSongIndex === -1 && newSongs.length > 0) {
-				loadSong(0);
+			// 3. Combine file paths and metadata results into Song objects
+			const enrichedSongs = paths.map((path, index) => {
+				const metadata = metadataResults[index] as Metadata | undefined;
+				return {
+					path,
+					url: convertFileSrc(path),
+					name: path.split(/[/\\]/).pop() ?? path, // Extract the file name
+					metadata,
+				};
+			});
+
+			// 4. Add new songs to the playlist
+			setPlaylist((prev) => {
+				// Avoid adding duplicates based on file path
+				const existingPaths = new Set(prev.map((song) => song.path));
+				const newSongs = enrichedSongs.filter(
+					(song) => !existingPaths.has(song.path)
+				);
+				return [...prev, ...newSongs];
+			});
+			setStatusMessage(
+				`${enrichedSongs.length} songs added and metadata loaded.`
+			);
+
+			// 5. If no song was playing before, load the first new song
+			if (currentSongIndex === -1 && enrichedSongs.length > 0) {
+				// The first new song is at the index of the playlist's previous length
+				loadSong(initialPlaylistLength);
 			}
 		} catch (error) {
-			console.error("Tauri dialog error:", error);
+			console.error("Tauri dialog or metadata error:", error);
 			setStatusMessage(
-				"Error selecting files. Check Tauri configuration and permissions."
+				"Error selecting/reading files. Check Tauri configuration and Rust logs."
 			);
 		}
 	};
@@ -198,6 +220,32 @@ export function Player() {
 		}
 	};
 
+	// fetch metadata when a new song is loaded
+	const getMetadata = async (path: string) => {
+		try {
+			// Calls the Rust command defined in src-tauri/main.rs
+			const metadata = await invoke<Metadata | null>("get_metadata", {
+				filePath: path,
+			});
+			return metadata;
+		} catch (error) {
+			console.error("Failed to fetch metadata:", error);
+			setStatusMessage("Error reading file metadata. Check Rust logs.");
+		}
+	};
+
+	const coverUrl = currentSong?.metadata?.base64_cover
+		? `data:image/jpeg;base64,${currentSong.metadata.base64_cover}`
+		: null;
+	const songTitle =
+		extractSpecificMetadata(currentSong, "title") ||
+		currentSong?.name ||
+		"Unknown Title";
+	const songArtist =
+		extractSpecificMetadata(currentSong, "artist") || "Unknown Artist";
+	const songAlbum =
+		extractSpecificMetadata(currentSong, "album") || "Unknown Album";
+
 	return (
 		<div className="min-h-screen bg-gray-900 text-white p-4 md:p-8 font-sans antialiased">
 			{/* Tailwind CSS Script Tag is assumed to be in the index.html for React projects */}
@@ -207,83 +255,90 @@ export function Player() {
 
 			<div className="max-w-4xl mx-auto space-y-8">
 				{/* Playback Status and Controls */}
-				<div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-indigo-700/50">
-					<p className="text-xs text-indigo-400 font-semibold mb-2">
+				<div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-indigo-700/50">
+					{/* <p className="text-xs text-indigo-400 font-semibold mb-2">
 						NOW PLAYING
-					</p>
-					<div className="flex items-center space-x-4">
-						<Music className="w-8 h-8 text-indigo-500" />
-						<div className="flex-1 overflow-hidden">
-							<h2 className="text-xl font-bold truncate">
-								{currentSong
-									? currentSong.name
-									: "No song selected"}
-							</h2>
-						</div>
-					</div>
-
-					{/* Progress Bar (Slider) */}
-					<div className="flex items-center space-x-4 my-6">
-						<span className="text-sm font-mono text-gray-400 w-12 text-right">
-							{formatTime(currentTime)}
-						</span>
-
-						{/* Range Input for Seeking */}
-						{/* <input
-							type="range"
-							min="0"
-							max={duration || 0}
-							value={currentTime}
-							onChange={handleSeek}
-							disabled={!currentSong}
-							className="flex-1 h-2 rounded-full appearance-none cursor-pointer bg-gray-700 disabled:opacity-50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-500 [&::-webkit-slider-thumb]:shadow-lg
-							[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-lg"
-						/> */}
-
-						<input
-							type="range"
-							min={0}
-							max={duration || 0}
-							value={currentTime}
-							onChange={handleSeek}
-							disabled={!currentSong}
-							className="flex-1"
-						/>
-
-						<span className="text-sm font-mono text-gray-400 w-12 text-left">
-							{formatTime(duration)}
-						</span>
-					</div>
-
-					<div className="flex justify-center items-center space-x-6 mt-6">
-						<button
-							onClick={playPrevious}
-							disabled={playlist.length === 0}
-							className="p-3 rounded-full bg-gray-700 hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-							title="Previous Song"
-						>
-							<SkipBack className="w-6 h-6" />
-						</button>
-						<button
-							onClick={togglePlayPause}
-							disabled={playlist.length === 0}
-							className="p-4 rounded-full bg-indigo-600 hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-indigo-500/30"
-							title={isPlaying ? "Pause" : "Play"}
-						>
-							{isPlaying ? (
-								<Pause className="w-8 h-8" />
+					</p> */}
+					<div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
+						<div className="w-full aspect-square rounded-md flex">
+							{coverUrl ? (
+								<img
+									src={coverUrl}
+									alt="Song Album Cover"
+									className="w-full h-full object-cover rounded-md"
+								/>
 							) : (
-								<Play className="w-8 h-8 fill-white" />
+								<div className="w-full bg-primary/15 flex-1 flex items-center justify-center rounded-sm">
+									<Music
+										size={120}
+										className="text-primary"
+									/>
+								</div>
 							)}
-						</button>
-						<button
-							onClick={playNext}
-							disabled={playlist.length === 0}
-							className="p-3 rounded-full bg-gray-700 hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-							title="Next Song"
-						>
-							<SkipForward className="w-6 h-6" />
-						</button>
+						</div>
+						<div className="col-span-2 max-md:col-span-1 bg-primary/15 p-4 rounded-sm flex flex-col gap-6">
+							<article className="space-y-1">
+								<h2 className="text-xl font-bold truncate">
+									{currentSong
+										? songTitle
+										: "No song selected"}
+								</h2>
+								<p>
+									{songArtist} | {}
+								</p>
+							</article>
+							<div className="mt-auto space-y-4">
+								<div>
+									<input
+										type="range"
+										min={0}
+										max={duration || 0}
+										value={currentTime}
+										onChange={handleSeek}
+										disabled={!currentSong}
+										className="flex-1 w-full cursor-pointer"
+									/>
+									<div className="flex items-center justify-between text-sm font-mono text-gray-400 text-right -mt-3">
+										<span>{formatTime(currentTime)}</span>
+										<span>
+											-{""}
+											{formatTime(duration - currentTime)}
+										</span>
+									</div>
+								</div>
+
+								<div className="flex justify-center items-center space-x-6">
+									<button
+										onClick={playPrevious}
+										disabled={playlist.length === 0}
+										className="p-3 rounded-full bg-gray-700 hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+										title="Previous Song"
+									>
+										<SkipBack className="w-6 h-6" />
+									</button>
+									<button
+										onClick={togglePlayPause}
+										disabled={playlist.length === 0}
+										className="p-4 rounded-full bg-indigo-600 hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-indigo-500/30"
+										title={isPlaying ? "Pause" : "Play"}
+									>
+										{isPlaying ? (
+											<Pause className="w-8 h-8" />
+										) : (
+											<Play className="w-8 h-8 fill-white" />
+										)}
+									</button>
+									<button
+										onClick={playNext}
+										disabled={playlist.length === 0}
+										className="p-3 rounded-full bg-gray-700 hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+										title="Next Song"
+									>
+										<SkipForward className="w-6 h-6" />
+									</button>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -294,7 +349,7 @@ export function Player() {
 						className="w-full md:w-auto flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 rounded-lg font-bold hover:bg-green-700 transition shadow-lg"
 					>
 						<ListMusic className="w-5 h-5" />
-						<span>Add Files to Library</span>
+						<span>Add Music to Library</span>
 					</button>
 					<p className="text-sm text-gray-400 italic mt-2">
 						{statusMessage}
@@ -317,18 +372,46 @@ export function Player() {
 								<div
 									key={song.path}
 									onClick={() => loadSong(index)}
-									className={`flex items-center p-3 rounded-lg cursor-pointer transition ${
-										index === currentSongIndex
-											? "bg-indigo-700/50 border-l-4 border-indigo-400 font-semibold"
-											: "hover:bg-gray-700"
-									}`}
+									className={cn(
+										"flex items-center p-3 rounded-lg cursor-pointer transition border-l-4 border-transparent",
+										{
+											"bg-indigo-700/50 border-l-4 border-indigo-400 font-semibold":
+												index === currentSongIndex,
+											"hover:bg-gray-700":
+												index !== currentSongIndex,
+										}
+									)}
 								>
 									<span className="w-8 text-center text-sm font-mono text-gray-400 mr-4">
 										{index + 1}.
 									</span>
-									<span className="truncate flex-1">
-										{song.name}
-									</span>
+									<div className="flex flex-1 gap-2 ">
+										<CoverImage
+											base64_cover={
+												song?.metadata?.base64_cover
+											}
+											className="w-12"
+										/>
+										<article className="space-y-0.5">
+											<p className="truncate flex-1">
+												{extractSpecificMetadata(
+													song,
+													"title"
+												) || song.name}
+											</p>
+											<p className="text-sm text-gray-400 truncate">
+												{extractSpecificMetadata(
+													song,
+													"artist"
+												) || "Unknown Artist"}{" "}
+												|{" "}
+												{extractSpecificMetadata(
+													song,
+													"album"
+												) || "Unknown Album"}
+											</p>
+										</article>
+									</div>
 									{index === currentSongIndex && (
 										<div className="playing">
 											{Array(5)

@@ -7,3 +7,7 @@ export const formatTime = (timeInSeconds: number): string => {
     const formattedSeconds = String(seconds).padStart(2, '0');
     return `${formattedMinutes}:${formattedSeconds}`;
 };
+
+export const extractSpecificMetadata = (song: Song, type: keyof Metadata) => {
+    return song.metadata ? song.metadata[type] : null;
+}
