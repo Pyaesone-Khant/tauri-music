@@ -9,6 +9,9 @@ import {
 	SkipForward,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "../libs/cn";
+import { formatTime } from "../libs/utils";
+import "./style.css";
 
 type Song = {
 	path: string;
@@ -21,6 +24,10 @@ export function Player() {
 	const [currentSongIndex, setCurrentSongIndex] = useState(-1);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+	// New state for progress bar
+	const [currentTime, setCurrentTime] = useState<number>(0);
+	const [duration, setDuration] = useState<number>(0);
 
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -117,7 +124,6 @@ export function Player() {
 	}, [playNext]);
 
 	// --- File Dialog and Loading ---
-
 	const selectMusicFiles = async () => {
 		setStatusMessage("Opening file dialog...");
 		try {
@@ -167,11 +173,36 @@ export function Player() {
 		}
 	};
 
+	// playback progress handlers
+	// New handler: Update currentTime state as audio plays
+	const handleTimeUpdate = () => {
+		if (audioRef.current) {
+			setCurrentTime(audioRef.current.currentTime);
+		}
+	};
+
+	// New handler: Get duration once metadata is loaded
+	const handleLoadedMetadata = () => {
+		if (audioRef.current) {
+			setDuration(audioRef.current.duration);
+		}
+	};
+
+	// New handler: Allows user to seek (drag) the playback position
+	const handleSeek = (event: React.ChangeEvent<HTMLInputElement>) => {
+		// The value from the range input is always a string, so we parse it to float
+		const seekTime = parseFloat(event.target.value);
+		if (audioRef.current && !isNaN(seekTime)) {
+			audioRef.current.currentTime = seekTime;
+			setCurrentTime(seekTime); // Optimistically update UI immediately
+		}
+	};
+
 	return (
 		<div className="min-h-screen bg-gray-900 text-white p-4 md:p-8 font-sans antialiased">
 			{/* Tailwind CSS Script Tag is assumed to be in the index.html for React projects */}
 			<h1 className="text-3xl font-extrabold mb-8 text-center text-indigo-400">
-				Tauri Music Player MVP
+				Gucxx Music
 			</h1>
 
 			<div className="max-w-4xl mx-auto space-y-8">
@@ -189,6 +220,39 @@ export function Player() {
 									: "No song selected"}
 							</h2>
 						</div>
+					</div>
+
+					{/* Progress Bar (Slider) */}
+					<div className="flex items-center space-x-4 my-6">
+						<span className="text-sm font-mono text-gray-400 w-12 text-right">
+							{formatTime(currentTime)}
+						</span>
+
+						{/* Range Input for Seeking */}
+						{/* <input
+							type="range"
+							min="0"
+							max={duration || 0}
+							value={currentTime}
+							onChange={handleSeek}
+							disabled={!currentSong}
+							className="flex-1 h-2 rounded-full appearance-none cursor-pointer bg-gray-700 disabled:opacity-50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-500 [&::-webkit-slider-thumb]:shadow-lg
+							[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-lg"
+						/> */}
+
+						<input
+							type="range"
+							min={0}
+							max={duration || 0}
+							value={currentTime}
+							onChange={handleSeek}
+							disabled={!currentSong}
+							className="flex-1"
+						/>
+
+						<span className="text-sm font-mono text-gray-400 w-12 text-left">
+							{formatTime(duration)}
+						</span>
 					</div>
 
 					<div className="flex justify-center items-center space-x-6 mt-6">
@@ -265,12 +329,27 @@ export function Player() {
 									<span className="truncate flex-1">
 										{song.name}
 									</span>
-									{index === currentSongIndex &&
-										isPlaying && (
-											<span className="text-indigo-400 text-xs ml-2 animate-pulse">
-												Playing...
-											</span>
-										)}
+									{index === currentSongIndex && (
+										<div className="playing">
+											{Array(5)
+												.fill(0)
+												.map((_, i) => (
+													<div
+														key={i}
+														className={cn(
+															`audio-bar ${
+																isPlaying
+																	? `bar-${
+																			i +
+																			1
+																	  }`
+																	: `bar-paused`
+															}`
+														)}
+													/>
+												))}
+										</div>
+									)}
 								</div>
 							))
 						)}
@@ -279,7 +358,12 @@ export function Player() {
 			</div>
 
 			{/* Hidden HTML Audio Element - the playback engine */}
-			<audio ref={audioRef} className="hidden"></audio>
+			<audio
+				ref={audioRef}
+				className="hidden"
+				onTimeUpdate={handleTimeUpdate}
+				onLoadedMetadata={handleLoadedMetadata}
+			/>
 		</div>
 	);
 }
