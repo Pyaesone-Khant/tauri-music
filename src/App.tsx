@@ -1,6 +1,12 @@
+// mantine styles
+import "@mantine/core/styles.css";
+
+import { MantineProvider } from "@mantine/core";
 import { useEffect } from "react";
 import "./App.css";
+import { PlayerProvider } from "./contexts/PlayerContext";
 import { Player } from "./music-player";
+import { theme } from "./services/theme";
 
 function App() {
 	useEffect(() => {
@@ -20,9 +26,13 @@ function App() {
 	}, []);
 
 	return (
-		<main>
-			<Player />
-		</main>
+		<MantineProvider theme={theme}>
+			<main>
+				<PlayerProvider>
+					<Player />
+				</PlayerProvider>
+			</main>
+		</MantineProvider>
 	);
 }
 

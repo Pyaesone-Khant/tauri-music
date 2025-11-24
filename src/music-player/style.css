@@ -8,18 +8,19 @@
 }
 
 .audio-bar {
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-200);
   height: 24px;
   width: 2px;
   position: relative;
   transform-origin: center;
+  border-radius: 1000px;
 
-  &.bar-paused{
+  &.bar-paused {
     animation: none;
     transform: scaleY(0.5);
 
-    &:nth-child(even){
-        transform: scaleY(0.8);
+    &:nth-child(even) {
+      transform: scaleY(0.8);
     }
   }
 }
@@ -29,7 +30,7 @@
 .bar-3,
 .bar-4,
 .bar-5 {
-    animation: infinite playing 1.2s ease-in-out;
+  animation: infinite playing 1.2s ease-in-out;
 }
 
 .bar-1 {
@@ -55,17 +56,21 @@
 @keyframes playing {
   0% {
     transform: scaleY(0.2);
+    opacity: 1;
   }
 
   33% {
     transform: scaleY(0.6);
+    opacity: 0.8;
   }
 
   66% {
     transform: scaleY(0.9);
+    opacity: 0.6;
   }
 
   100% {
     transform: scaleY(0.2);
+    opacity: 1;
   }
 }

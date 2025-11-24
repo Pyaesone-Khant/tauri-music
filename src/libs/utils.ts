@@ -8,6 +8,6 @@ export const formatTime = (timeInSeconds: number): string => {
     return `${formattedMinutes}:${formattedSeconds}`;
 };
 
-export const extractSpecificMetadata = (song: Song, type: keyof Metadata) => {
-    return song.metadata ? song.metadata[type] : null;
+export const extractSpecificMetadata = (song: Song | null, type: keyof Metadata) => {
+    return song?.metadata ? song.metadata[type] : null;
 }

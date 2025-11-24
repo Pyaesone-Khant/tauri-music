@@ -1,4 +1,5 @@
 import { Music } from "lucide-react";
+import { cn } from "../../libs/cn";
 
 type Props = {
 	base64_cover: string | null | undefined;
@@ -15,10 +16,15 @@ export function CoverImage({ base64_cover, className, iconSize = 120 }: Props) {
 		<img
 			src={coverUrl}
 			alt="Song Album Cover"
-			className={`object-cover rounded-sm ${className}`}
+			className={`object-cover aspect-square rounded-sm ${className}`}
 		/>
 	) : (
-		<div className="w-full bg-primary/15 flex items-center justify-center rounded-sm">
+		<div
+			className={cn(
+				"w-full bg-primary/15 flex items-center justify-center rounded-sm aspect-square",
+				className
+			)}
+		>
 			<Music size={iconSize} className="text-primary" />
 		</div>
 	);
