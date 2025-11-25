@@ -12,10 +12,10 @@ import {
 
 type PlayerContextType = {
 	playlist: Song[];
-	currentSongIndex: number;
+	setPlaylist: React.Dispatch<React.SetStateAction<Song[]>>;
 	currentSong: Song | null;
 	isPlaying: boolean;
-	onLoadSong: (index: number) => void;
+	onLoadSong: (path: string) => void;
 	audioRef: React.RefObject<HTMLAudioElement | null> | null;
 	statusMessage: string;
 	onTogglePlayPause: () => void;
@@ -25,11 +25,13 @@ type PlayerContextType = {
 	currentTime: number;
 	duration: number;
 	setCurrentTime: (time: number) => void;
+	currentSongPath: string | null;
+	setCurrentSongIndex: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const PlayerContext = createContext<PlayerContextType>({
 	playlist: [],
-	currentSongIndex: -1,
+	setPlaylist: () => {},
 	currentSong: null,
 	isPlaying: false,
 	onLoadSong: () => {},
@@ -42,6 +44,8 @@ const PlayerContext = createContext<PlayerContextType>({
 	currentTime: 0,
 	duration: 0,
 	setCurrentTime: () => {},
+	currentSongPath: null,
+	setCurrentSongIndex: () => {},
 });
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
@@ -50,15 +54,19 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	const [isPlaying, setIsPlaying] = useState<boolean>(false);
 	const [statusMessage, setStatusMessage] = useState<string>("");
 
+	// to make current playing song not to change when Dnd Sorting changes was made.
+	const [currentSongPath, setCurrentSongPath] = useState<string | null>(null);
+
 	const [currentTime, setCurrentTime] = useState<number>(0);
 	const [duration, setDuration] = useState<number>(0);
 
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 
+	// load song
 	const onLoadSong = useCallback(
-		(index: number) => {
-			if (index < 0 || index >= playlist.length) return;
-			const isAlreadyPlayingCurrent = index === currentSongIndex;
+		(path: string) => {
+			if (path === null) return;
+			const isAlreadyPlayingCurrent = path === currentSongPath;
 
 			if (isAlreadyPlayingCurrent) {
 				if (isPlaying) {
@@ -76,11 +84,14 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 						setIsPlaying(false);
 					});
 			} else {
-				setCurrentSongIndex(index);
+				setCurrentSongPath(path);
 				setIsPlaying(false);
 
 				if (audioRef.current === null) return;
-				audioRef.current.src = playlist[index].url;
+
+				const songToPlay = playlist.find((song) => song.path === path);
+
+				audioRef.current.src = songToPlay?.url || "";
 				audioRef.current.load();
 
 				setTimeout(() => {
@@ -99,7 +110,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 				}, 100);
 			}
 		},
-		[playlist, isPlaying, currentSongIndex]
+		[playlist, isPlaying, currentSongPath]
 	);
 
 	const onTogglePlayPause = () => {
@@ -130,7 +141,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 		if (playlist.length === 0) return;
 
 		const nextIndex = (currentSongIndex + 1) % playlist.length;
-		onLoadSong(nextIndex);
+		setCurrentSongIndex(nextIndex);
+		onLoadSong(playlist[nextIndex]?.path || "");
 	};
 
 	const playPrevious = () => {
@@ -138,7 +150,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 
 		const prevIndex =
 			(currentSongIndex - 1 + playlist.length) % playlist.length;
-		onLoadSong(prevIndex);
+		setCurrentSongIndex(prevIndex);
+		onLoadSong(playlist[prevIndex]?.path || "");
 	};
 
 	// auto play next song when current ends
@@ -218,9 +231,9 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 			);
 
 			// Auto play the first added song if nothing is playing
-			if (currentSongIndex === -1 && initialPlaylistLength === 0) {
-				setCurrentSongIndex(initialPlaylistLength);
-				onLoadSong(initialPlaylistLength);
+			if (currentSongPath === null && initialPlaylistLength === 0) {
+				setCurrentSongPath(enrichedSongs[0]?.path);
+				onLoadSong(enrichedSongs[0]?.path);
 
 				// auto play
 				if (audioRef.current) {
@@ -264,8 +277,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const currentSong = useMemo(() => {
-		return playlist[currentSongIndex] || null;
-	}, [playlist, currentSongIndex]);
+		return playlist.find((song) => song.path === currentSongPath) || null;
+	}, [playlist, currentSongPath]);
 
 	const handleTimeUpdate = () => {
 		if (!audioRef.current) return;
@@ -278,8 +291,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const isSongPlaying = useMemo(() => {
-		return isPlaying && currentSongIndex !== -1;
-	}, [isPlaying, currentSongIndex]);
+		return isPlaying && currentSongPath !== null;
+	}, [isPlaying, currentSongPath]);
 
 	// toggle isPlaying when audio element's play/pause events occur
 	useEffect(() => {
@@ -300,7 +313,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const contextValue: PlayerContextType = {
 		playlist,
-		currentSongIndex,
+		setPlaylist,
 		currentSong,
 		isPlaying: isSongPlaying,
 		onLoadSong,
@@ -313,6 +326,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 		currentTime,
 		duration,
 		setCurrentTime,
+		currentSongPath,
+		setCurrentSongIndex,
 	};
 
 	return (

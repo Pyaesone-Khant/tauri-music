@@ -1,13 +1,55 @@
+import {
+	closestCenter,
+	DndContext,
+	DragEndEvent,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Button, Text } from "@mantine/core";
 import { ListMusic } from "lucide-react";
 import { usePlayerContext } from "../../contexts/PlayerContext";
 import { SongCard } from "./SongCard";
 
 export function Playlist() {
-	const { selectMusicFiles, statusMessage, playlist, currentSongIndex } =
-		usePlayerContext();
+	const {
+		selectMusicFiles,
+		statusMessage,
+		playlist,
+		setPlaylist,
+		setCurrentSongIndex,
+	} = usePlayerContext();
 
-	console.log(currentSongIndex);
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		})
+	);
+
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
+
+		if (active.id !== over?.id) {
+			setPlaylist((items: Song[]) => {
+				const oldIndex = items.findIndex(
+					(item) => item.path === active.id
+				);
+				const newIndex = items.findIndex(
+					(item) => item.path === over?.id
+				);
+				setCurrentSongIndex(newIndex);
+				return arrayMove(items, oldIndex, newIndex);
+			});
+		}
+	};
 
 	return (
 		<div className="space-y-6">
@@ -33,9 +75,26 @@ export function Playlist() {
 				</h3>
 				<div className="max-h-80 overflow-y-auto space-y-2">
 					{playlist.length > 0 ? (
-						playlist.map((song, index) => (
-							<SongCard key={song.path} index={index} {...song} />
-						))
+						<>
+							<DndContext
+								sensors={sensors}
+								collisionDetection={closestCenter}
+								onDragEnd={handleDragEnd}
+							>
+								<SortableContext
+									items={playlist.map((song) => song.path)}
+									strategy={verticalListSortingStrategy}
+								>
+									{playlist.map((song, index) => (
+										<SongCard
+											key={song.path}
+											index={index}
+											{...song}
+										/>
+									))}
+								</SortableContext>
+							</DndContext>
+						</>
 					) : (
 						<p className="p-4 text-center mix-blend-overlay">
 							Your playlist is empty. Click "Add Music to
