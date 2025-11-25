@@ -28,7 +28,7 @@ export const SongCard = memo((props: Song & { index: number }) => {
 				className={cn(
 					"flex items-center p-3 rounded-lg cursor-pointer transition border-l-4 border-transparent mix-blend-luminosity gap-2",
 					{
-						"bg-primary-800 border-l-4 border-white/70 font-medium":
+						"bg-primary-950 border-l-4 border-white/70 font-medium":
 							path === currentSongPath,
 						"hover:bg-primary-800/30": path !== currentSongPath,
 					}

@@ -1,5 +1,6 @@
 import { usePlayerContext } from "../contexts/PlayerContext";
 import { useGetGradientBackgroundColor } from "../hooks/useGetColorFromPhoto";
+import { useGetImage } from "../hooks/useGetImage";
 import { cn } from "../libs/cn";
 import { Playlist } from "./components/Playlist";
 import { SongPlayer } from "./components/SongPlayer";
@@ -7,6 +8,11 @@ import "./style.css";
 
 export function Player() {
 	const { currentSong } = usePlayerContext();
+
+	const { isImageLoaded } = useGetImage(
+		currentSong?.metadata?.base64_cover || null
+	);
+
 	const { gradientBackground } = useGetGradientBackgroundColor(
 		currentSong?.metadata?.base64_cover || null
 	);
@@ -22,7 +28,7 @@ export function Player() {
 			)}
 			style={{
 				background:
-					currentSong && gradientBackground
+					currentSong && gradientBackground && isImageLoaded
 						? `linear-gradient(135deg, ${gradientBackground})`
 						: undefined,
 			}}

@@ -84,6 +84,9 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 						setIsPlaying(false);
 					});
 			} else {
+				setCurrentSongIndex(
+					playlist.findIndex((song) => song.path === path)
+				);
 				setCurrentSongPath(path);
 				setIsPlaying(false);
 

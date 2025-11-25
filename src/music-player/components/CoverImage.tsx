@@ -1,4 +1,5 @@
 import { Music } from "lucide-react";
+import { useGetImage } from "../../hooks/useGetImage";
 import { cn } from "../../libs/cn";
 
 type Props = {
@@ -8,24 +9,24 @@ type Props = {
 };
 
 export function CoverImage({ base64_cover, className, iconSize = 120 }: Props) {
-	const coverUrl = base64_cover
-		? `data:image/jpeg;base64,${base64_cover}`
-		: null;
+	const { coverUrl, isImageLoaded } = useGetImage(base64_cover);
 
-	return coverUrl ? (
-		<img
-			src={coverUrl}
-			alt="Song Album Cover"
-			className={`object-cover aspect-square rounded-sm ${className}`}
-		/>
+	return coverUrl && isImageLoaded ? (
+		<div className="aspect-square">
+			<img
+				src={coverUrl}
+				alt="Song Album Cover"
+				className={`object-cover rounded-sm ${className}`}
+			/>
+		</div>
 	) : (
 		<div
 			className={cn(
-				"w-full bg-primary/15 flex items-center justify-center rounded-sm aspect-square mix-blend-color-dodge",
+				"w-full flex items-center justify-center rounded-sm aspect-square bg-blend-darken border border-white/20",
 				className
 			)}
 		>
-			<Music size={iconSize} />
+			<Music size={iconSize} className="mix-blend-overlay" />
 		</div>
 	);
 }
