@@ -30,7 +30,7 @@ export const SongCard = memo((props: Song & { index: number }) => {
 					{
 						"bg-primary-950 border-l-4 border-white/70 font-medium":
 							path === currentSongPath,
-						"hover:bg-primary-800/30": path !== currentSongPath,
+						"hover:bg-primary-950/30": path !== currentSongPath,
 					}
 				)}
 			>

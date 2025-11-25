@@ -19,7 +19,7 @@ export function SongPlayer() {
 					}
 				/>
 			</div>
-			<div className="col-span-2 max-sm:col-span-1 flex flex-col p-4 bg-blend-overlay border border-white/20 rounded-md shadow-xl gap-6">
+			<div className="col-span-2 max-sm:col-span-1 flex flex-col p-4 border border-white/20 rounded-md shadow-xl gap-6">
 				<article className="space-y-1">
 					<MarqueeText
 						classNames={{
