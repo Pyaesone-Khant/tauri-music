@@ -9,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { PlayMode } from "../constants/playmode.enum";
 
 type PlayerContextType = {
 	playlist: Song[];
@@ -27,6 +28,8 @@ type PlayerContextType = {
 	setCurrentTime: (time: number) => void;
 	currentSongPath: string | null;
 	setCurrentSongIndex: React.Dispatch<React.SetStateAction<number>>;
+	currentPlayMode: PlayMode;
+	handleChangePlayMode: () => void;
 };
 
 const PlayerContext = createContext<PlayerContextType>({
@@ -46,6 +49,8 @@ const PlayerContext = createContext<PlayerContextType>({
 	setCurrentTime: () => {},
 	currentSongPath: null,
 	setCurrentSongIndex: () => {},
+	currentPlayMode: PlayMode.REPEAT,
+	handleChangePlayMode: () => {},
 });
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
@@ -57,10 +62,70 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	// to make current playing song not to change when Dnd Sorting changes was made.
 	const [currentSongPath, setCurrentSongPath] = useState<string | null>(null);
 
+	// play mode options: "repeat", "repeat-one", "shuffle"
+	const [currentPlayMode, setCurrentPlayMode] = useState<PlayMode>(
+		PlayMode.REPEAT
+	);
+
 	const [currentTime, setCurrentTime] = useState<number>(0);
 	const [duration, setDuration] = useState<number>(0);
 
 	const audioRef = useRef<HTMLAudioElement | null>(null);
+
+	const handleChangePlayMode = () => {
+		const nextMode =
+			currentPlayMode === PlayMode.REPEAT
+				? PlayMode["REPEAT-1"]
+				: currentPlayMode === PlayMode["REPEAT-1"]
+				? PlayMode.SHUFFLE
+				: PlayMode.REPEAT;
+		setCurrentPlayMode(nextMode);
+	};
+
+	useEffect(() => {
+		if (playlist.length === 0) return;
+		if (currentPlayMode === PlayMode.SHUFFLE) {
+			const currentSong = playlist.find(
+				(song) => song.path === currentSongPath
+			);
+
+			const remainingSongs = playlist.filter(
+				(song) => song.path !== currentSongPath
+			);
+
+			// Simple shuffle algorithm
+			for (let i = remainingSongs.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[remainingSongs[i], remainingSongs[j]] = [
+					remainingSongs[j],
+					remainingSongs[i],
+				];
+			}
+
+			const newPlaylist = currentSong
+				? [currentSong, ...remainingSongs]
+				: remainingSongs;
+
+			const newCurrentIndex = newPlaylist.findIndex(
+				(song) => song.path === currentSongPath
+			);
+
+			setCurrentSongIndex(newCurrentIndex);
+			setPlaylist(newPlaylist);
+		}
+
+		if (currentPlayMode === PlayMode.REPEAT) {
+			// Reset to original playlist order if needed
+			const originalPlaylist = [...playlist].sort(
+				(a, b) => a.timestamp - b.timestamp
+			);
+			const newCurrentIndex = originalPlaylist.findIndex(
+				(song) => song.path === currentSongPath
+			);
+			setCurrentSongIndex(newCurrentIndex);
+			setPlaylist(originalPlaylist);
+		}
+	}, [currentPlayMode]);
 
 	// load song
 	const onLoadSong = useCallback(
@@ -160,9 +225,17 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	// auto play next song when current ends
 	useEffect(() => {
 		if (!audioRef.current) return;
-
 		const handleEnded = () => {
-			playNext();
+			// handle according to play mode
+			if (currentPlayMode === PlayMode["REPEAT-1"]) {
+				audioRef.current?.play().catch((err) => {
+					console.error("Error replaying audio:", err);
+					setStatusMessage("Failed to replay the selected song.");
+					setIsPlaying(false);
+				});
+			} else {
+				playNext();
+			}
 		};
 
 		audioRef.current.addEventListener("ended", handleEnded);
@@ -171,7 +244,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 			if (!audioRef.current) return;
 			audioRef.current.removeEventListener("ended", handleEnded);
 		};
-	}, [playNext]);
+	}, [playNext, currentPlayMode]);
 
 	// --- File Dialog and Loading ---
 	const selectMusicFiles = async () => {
@@ -217,6 +290,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 					url: convertFileSrc(path),
 					name: path.split(/[/\\]/).pop() ?? path, // Extract the file name
 					metadata,
+					timestamp: Date.now(),
 				};
 			});
 
@@ -331,6 +405,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 		setCurrentTime,
 		currentSongPath,
 		setCurrentSongIndex,
+		currentPlayMode,
+		handleChangePlayMode,
 	};
 
 	return (

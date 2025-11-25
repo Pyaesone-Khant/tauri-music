@@ -23,7 +23,7 @@ export function SongPlayer() {
 				<article className="space-y-1">
 					<MarqueeText
 						classNames={{
-							text: "text-xl font-semibold whitespace-nowrap mix-blend-overlay",
+							text: "text-xl font-semibold whitespace-nowrap mix-blend-lighten",
 						}}
 						isAnimated={false}
 					>
@@ -33,7 +33,7 @@ export function SongPlayer() {
 					</MarqueeText>
 					<MarqueeText
 						classNames={{
-							text: "whitespace-nowrap truncate mix-blend-overlay",
+							text: "whitespace-nowrap truncate mix-blend-lighten",
 						}}
 						isAnimated={false}
 					>
@@ -45,7 +45,7 @@ export function SongPlayer() {
 					</MarqueeText>
 					<MarqueeText
 						classNames={{
-							text: "mix-blend-overlay opacity-60",
+							text: "mix-blend-lighten opacity-60",
 						}}
 						isAnimated={false}
 					>

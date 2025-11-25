@@ -11,4 +11,5 @@ type Song = {
     url: string;
     name: string;
     metadata?: Metadata;
+    timestamp: number;
 }
