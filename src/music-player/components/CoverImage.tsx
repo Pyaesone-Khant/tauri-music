@@ -21,11 +21,11 @@ export function CoverImage({ base64_cover, className, iconSize = 120 }: Props) {
 	) : (
 		<div
 			className={cn(
-				"w-full bg-primary/15 flex items-center justify-center rounded-sm aspect-square",
+				"w-full bg-primary/15 flex items-center justify-center rounded-sm aspect-square mix-blend-color-dodge",
 				className
 			)}
 		>
-			<Music size={iconSize} className="text-primary" />
+			<Music size={iconSize} />
 		</div>
 	);
 }

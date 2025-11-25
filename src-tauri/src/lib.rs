@@ -37,12 +37,6 @@ fn get_metadata(file_path: String) -> MetadataResponse {
             Some(BASE64_STANDARD.encode(&picture.data))
         });
 
-    println!(
-        "Metadata fetched for {}: {:?}",
-        file_path,
-        tag.get("duration")
-    );
-
     MetadataResponse {
         title: tag.title().map(|s| s.to_string()),
         artist: tag.artist().map(|s| s.to_string()),

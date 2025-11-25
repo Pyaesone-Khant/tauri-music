@@ -15,18 +15,18 @@ export const SongCard = memo((props: Song & { index: number }) => {
 		<div
 			onClick={() => onLoadSong(index)}
 			className={cn(
-				"flex items-center p-3 rounded-lg cursor-pointer transition border-l-4 border-transparent",
+				"flex items-center p-3 rounded-lg cursor-pointer transition border-l-4 border-transparent mix-blend-luminosity gap-2",
 				{
-					"bg-primary-900 border-l-4 border-primary-200 font-medium":
+					"bg-primary-800 border-l-4 border-white/70 font-medium":
 						index === currentSongIndex,
 					"hover:bg-primary-800/30": index !== currentSongIndex,
 				}
 			)}
 		>
-			<span className="w-8 text-center text-sm font-mono text-primary-200 mr-4">
+			<span className="w-8 text-center text-sm font-mono mix-blend-difference">
 				{index + 1}.
 			</span>
-			<div className="flex flex-1 items-center gap-2">
+			<div className="flex flex-1 items-center gap-2 pr-2 overflow-hidden">
 				<CoverImage
 					base64_cover={
 						extractSpecificMetadata(props, "base64_cover") as
@@ -48,7 +48,7 @@ export const SongCard = memo((props: Song & { index: number }) => {
 					<MarqueeText
 						isAnimated={index === currentSongIndex && isPlaying}
 						classNames={{
-							text: "text-sm text-primary-200 truncate",
+							text: "text-sm",
 						}}
 					>
 						{extractSpecificMetadata(props, "artist") ||

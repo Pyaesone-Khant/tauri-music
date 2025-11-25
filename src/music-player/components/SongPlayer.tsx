@@ -9,19 +9,21 @@ export function SongPlayer() {
 	const { currentSong } = usePlayerContext();
 
 	return (
-		<div className="grid grid-cols-3 gap-4 p-4 bg-primary/10 border-primary rounded-md">
-			<CoverImage
-				base64_cover={
-					extractSpecificMetadata(currentSong, "base64_cover") as
-						| string
-						| null
-				}
-			/>
-			<div className="col-span-2 flex flex-col p-4">
+		<div className="grid grid-cols-3 max-sm:grid-cols-1 gap-4 rounded-md">
+			<div className="shadow-xl">
+				<CoverImage
+					base64_cover={
+						extractSpecificMetadata(currentSong, "base64_cover") as
+							| string
+							| null
+					}
+				/>
+			</div>
+			<div className="col-span-2 max-sm:col-span-1 flex flex-col p-4 bg-blend-luminosity border border-white/20 rounded-md shadow-xl gap-6">
 				<article className="space-y-1">
 					<MarqueeText
 						classNames={{
-							text: "text-xl font-semibold text-primary-200 whitespace-nowrap",
+							text: "text-xl font-semibold whitespace-nowrap mix-blend-overlay",
 						}}
 						isAnimated={false}
 					>
@@ -31,7 +33,7 @@ export function SongPlayer() {
 					</MarqueeText>
 					<MarqueeText
 						classNames={{
-							text: "text-primary-200/70 whitespace-nowrap truncate",
+							text: "whitespace-nowrap truncate mix-blend-overlay",
 						}}
 						isAnimated={false}
 					>
@@ -40,6 +42,16 @@ export function SongPlayer() {
 						|{" "}
 						{extractSpecificMetadata(currentSong, "album") ||
 							"Unknown Album"}
+					</MarqueeText>
+					<MarqueeText
+						classNames={{
+							text: "mix-blend-overlay opacity-60",
+						}}
+						isAnimated={false}
+					>
+						Released:{" "}
+						{extractSpecificMetadata(currentSong, "year") ||
+							"Unknown Year"}
 					</MarqueeText>
 				</article>
 

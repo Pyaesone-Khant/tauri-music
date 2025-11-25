@@ -18,7 +18,7 @@ export function MarqueeText({ children, classNames, isAnimated }: Props) {
 			)}
 		>
 			<p
-				className={cn(classNames?.text, {
+				className={cn("mix-blend-difference", classNames?.text, {
 					"animate-marquee": isAnimated,
 				})}
 			>

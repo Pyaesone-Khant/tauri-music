@@ -9,7 +9,7 @@ export function Controls() {
 	const disabled = playlist.length === 0;
 
 	return (
-		<div className="flex items-center justify-center gap-4">
+		<div className="flex items-center justify-center gap-2 mix-blend-luminosity">
 			<ActionIcon
 				size={"xl"}
 				onClick={playPrevious}
@@ -29,7 +29,7 @@ export function Controls() {
 				aria-label={isPlaying ? "Pause" : "Play"}
 				title={isPlaying ? "Pause" : "Play"}
 			>
-				<DynamicIcon name={isPlaying ? "pause" : "play"} size={20} />
+				<DynamicIcon name={isPlaying ? "pause" : "play"} size={24} />
 			</ActionIcon>
 			<ActionIcon
 				size={"xl"}

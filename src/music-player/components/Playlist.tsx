@@ -4,7 +4,10 @@ import { usePlayerContext } from "../../contexts/PlayerContext";
 import { SongCard } from "./SongCard";
 
 export function Playlist() {
-	const { selectMusicFiles, statusMessage, playlist } = usePlayerContext();
+	const { selectMusicFiles, statusMessage, playlist, currentSongIndex } =
+		usePlayerContext();
+
+	console.log(currentSongIndex);
 
 	return (
 		<div className="space-y-6">
@@ -16,6 +19,7 @@ export function Playlist() {
 					variant="white"
 					aria-label="Add Music to Playlist"
 					title="Add Music to Playlist"
+					className=" mix-blend-hard-light "
 				>
 					Add Music to Playlist
 				</Button>
@@ -23,8 +27,8 @@ export function Playlist() {
 					{statusMessage || "No songs in the playlist."}
 				</Text>
 			</div>
-			<div className="bg-primary/10 p-4 rounded-xl shadow-xl">
-				<h3 className="text-lg font-bold mb-4 border-b border-gray-700 pb-2">
+			<div className="bg-blend-luminosity p-4 rounded-md shadow-xl border border-white/20">
+				<h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-4 mix-blend-overlay ">
 					Playlist ({playlist.length} Tracks)
 				</h3>
 				<div className="max-h-80 overflow-y-auto space-y-2">
@@ -33,7 +37,7 @@ export function Playlist() {
 							<SongCard key={song.path} index={index} {...song} />
 						))
 					) : (
-						<p className="text-primary-300 p-4 text-center">
+						<p className="p-4 text-center mix-blend-overlay">
 							Your playlist is empty. Click "Add Music to
 							Playlist" to start adding your favorite songs.
 						</p>

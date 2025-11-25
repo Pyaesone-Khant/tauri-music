@@ -27,7 +27,7 @@ export function Player() {
 						: undefined,
 			}}
 		>
-			<h1 className="text-3xl font-extrabold mb-8 text-center mx-auto bg-black text-transparent bg-clip-text w-fit mix-blend-soft-light ">
+			<h1 className="text-3xl font-extrabold mb-8 text-center mx-auto mix-blend-overlay ">
 				Tauri Music
 			</h1>
 			<div className="max-w-4xl mx-auto space-y-8">
