@@ -10,8 +10,13 @@
 		"dialog:default",
 		"fs:default",
 		{
-			"identifier": "fs:allow-exists",
-			"allow": [{ "path": "$DOWNLOAD/*" }]
-		}
+			"identifier": "fs:scope",
+			"allow": [
+				{
+					"path": "$DESKTOP/**, $DOCUMENTS/**, $DOWNLOAD/**, $APPDATA/**"
+				}
+			]
+		},
+		"fs:allow-read"
 	]
 }
