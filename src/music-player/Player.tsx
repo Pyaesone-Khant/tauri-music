@@ -1,3 +1,5 @@
+import { useHotkeys } from "@mantine/hooks";
+import { useEffect } from "react";
 import { usePlayerContext } from "../contexts/PlayerContext";
 import { useGetGradientBackgroundColor } from "../hooks/useGetColorFromPhoto";
 import { useGetImage } from "../hooks/useGetImage";
@@ -7,7 +9,8 @@ import { SongPlayer } from "./components/SongPlayer";
 import "./style.css";
 
 export function Player() {
-	const { currentSong } = usePlayerContext();
+	const { currentSong, audioRef, playNext, playPrevious } =
+		usePlayerContext();
 
 	const { isImageLoaded } = useGetImage(
 		currentSong?.metadata?.base64_cover || null
@@ -16,6 +19,47 @@ export function Player() {
 	const { gradientBackground } = useGetGradientBackgroundColor(
 		currentSong?.metadata?.base64_cover || null
 	);
+
+	// Keyboard shortcuts
+	useHotkeys([
+		[
+			"space",
+			() => {
+				if (audioRef?.current) {
+					if (audioRef.current.paused) {
+						audioRef.current.play();
+					} else {
+						audioRef.current.pause();
+					}
+				}
+			},
+		],
+		[
+			"F7",
+			() => {
+				playPrevious();
+			},
+		],
+		[
+			"F9",
+			() => {
+				playNext();
+			},
+		],
+	]);
+
+	// Media Session API integration
+	useEffect(() => {
+		if (!audioRef?.current) return;
+		if ("mediaSession" in navigator) {
+			navigator.mediaSession.setActionHandler("previoustrack", () => {
+				playPrevious();
+			});
+			navigator.mediaSession.setActionHandler("nexttrack", () => {
+				playNext();
+			});
+		}
+	}, [audioRef, playNext, playPrevious]);
 
 	return (
 		<div
