@@ -149,17 +149,42 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 						setIsPlaying(false);
 					});
 			} else {
-				setCurrentSongIndex(
-					playlist.findIndex((song) => song.path === path)
+				const selectedSong = playlist.find(
+					(song) => song.path === path
 				);
+
+				const selectedSongIndex = playlist.findIndex(
+					(song) => song.path === path
+				);
+
+				if (!selectedSong) {
+					setStatusMessage("Selected song not found in playlist.");
+					return;
+				}
+
+				const frontPartRemainingSongs = playlist.slice(
+					0,
+					selectedSongIndex
+				);
+
+				const backPartRemainingSongs = playlist.slice(
+					selectedSongIndex + 1
+				);
+
+				const newPlaylist = [
+					selectedSong,
+					...backPartRemainingSongs,
+				].concat(frontPartRemainingSongs);
+
+				setPlaylist(newPlaylist);
+
+				setCurrentSongIndex(0);
 				setCurrentSongPath(path);
 				setIsPlaying(false);
 
 				if (audioRef.current === null) return;
 
-				const songToPlay = playlist.find((song) => song.path === path);
-
-				audioRef.current.src = songToPlay?.url || "";
+				audioRef.current.src = selectedSong?.url || "";
 				audioRef.current.load();
 
 				setTimeout(() => {
