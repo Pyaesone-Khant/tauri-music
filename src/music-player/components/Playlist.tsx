@@ -24,7 +24,7 @@ export function Playlist() {
 		statusMessage,
 		playlist,
 		setPlaylist,
-		setCurrentSongIndex,
+		onLoadSong,
 	} = usePlayerContext();
 
 	const sensors = useSensors(
@@ -45,7 +45,12 @@ export function Playlist() {
 				const newIndex = items.findIndex(
 					(item) => item.path === over?.id
 				);
-				setCurrentSongIndex(newIndex);
+
+				if (newIndex === 0) {
+					// auto play the song moved to the top
+					onLoadSong(items[oldIndex].path);
+				}
+
 				return arrayMove(items, oldIndex, newIndex);
 			});
 		}

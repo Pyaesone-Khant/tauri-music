@@ -232,8 +232,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const playNext = () => {
 		if (playlist.length === 0) return;
-
-		const nextIndex = (currentSongIndex + 1) % playlist.length;
+		const nextIndex = currentSongIndex + 1;
 		setCurrentSongIndex(nextIndex);
 		onLoadSong(playlist[nextIndex]?.path || "");
 	};
@@ -241,8 +240,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	const playPrevious = () => {
 		if (playlist.length === 0) return;
 
-		const prevIndex =
-			(currentSongIndex - 1 + playlist.length) % playlist.length;
+		const prevIndex = currentSongIndex - 1 + playlist.length;
 		setCurrentSongIndex(prevIndex);
 		onLoadSong(playlist[prevIndex]?.path || "");
 	};
@@ -335,6 +333,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 			// Auto play the first added song if nothing is playing
 			if (currentSongPath === null && initialPlaylistLength === 0) {
 				setCurrentSongPath(enrichedSongs[0]?.path);
+				setCurrentSongIndex(0);
 				onLoadSong(enrichedSongs[0]?.path);
 
 				// auto play
