@@ -5,6 +5,7 @@ import { useGetGradientBackgroundColor } from "../hooks/useGetColorFromPhoto";
 import { useGetImage } from "../hooks/useGetImage";
 import { cn } from "../libs/cn";
 import { Playlist } from "./components/Playlist";
+import { SongLyrics } from "./components/SongLyrics";
 import { SongPlayer } from "./components/SongPlayer";
 import "./style.css";
 
@@ -64,7 +65,7 @@ export function Player() {
 	return (
 		<div
 			className={cn(
-				"min-h-screen text-white p-4 md:p-8 font-sans antialiased",
+				"min-h-screen flex flex-col text-white p-4 md:p-8 font-sans antialiased",
 				{
 					"bg-linear-to-br from-primary-950 via-red-900 to-purple-950":
 						true,
@@ -80,9 +81,14 @@ export function Player() {
 			<h1 className="text-3xl font-extrabold mb-8 text-center mx-auto mix-blend-overlay ">
 				Tauri Music
 			</h1>
-			<div className="max-w-4xl mx-auto space-y-8">
-				<SongPlayer />
-				<Playlist />
+			<div className="max-w-6xl mx-auto grid grid-cols-6 max-md:grid-cols-1 gap-8 flex-1">
+				<div className="col-span-4 max-md:col-span-1 space-y-8 flex flex-col">
+					<SongPlayer />
+					<Playlist />
+				</div>
+				<div className="col-span-2 max-md:col-span-1 flex flex-col">
+					<SongLyrics />
+				</div>
 			</div>
 		</div>
 	);

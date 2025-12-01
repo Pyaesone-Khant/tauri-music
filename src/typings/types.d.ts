@@ -4,6 +4,7 @@ type Metadata = {
     album: string | null;
     base64_cover: string | null;
     year: number | null;
+    lyrics: string | null;
 }
 
 type Song = {

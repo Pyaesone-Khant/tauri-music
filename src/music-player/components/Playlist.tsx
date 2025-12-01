@@ -57,7 +57,7 @@ export function Playlist() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 flex-1 flex flex-col">
 			<div className="flex items-center justify-between gap-4">
 				<Button
 					leftSection={<ListMusic />}
@@ -74,11 +74,11 @@ export function Playlist() {
 					{statusMessage || "No songs in the playlist."}
 				</Text>
 			</div>
-			<div className="bg-blend-luminosity p-4 rounded-md shadow-xl border border-white/20">
-				<h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-4 mix-blend-overlay ">
+			<div className="flex-1 bg-blend-luminosity p-4 rounded-md shadow-xl border border-white/20">
+				<h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-4 mix-blend-overlay">
 					Playlist ({playlist.length} Tracks)
 				</h3>
-				<div className="max-h-80 overflow-y-auto space-y-2">
+				<div className="max-h-96 overflow-y-scroll space-y-1 flex-1">
 					{playlist.length > 0 ? (
 						<>
 							<DndContext
@@ -101,7 +101,7 @@ export function Playlist() {
 							</DndContext>
 						</>
 					) : (
-						<p className="p-4 text-center mix-blend-overlay">
+						<p className="p-4 text-center mix-blend-overlay self-center justify-self-center">
 							Your playlist is empty. Click "Add Music to
 							Playlist" to start adding your favorite songs.
 						</p>

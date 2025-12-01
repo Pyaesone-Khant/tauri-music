@@ -12,7 +12,7 @@ export function CoverImage({ base64_cover, className, iconSize = 120 }: Props) {
 	const { coverUrl, isImageLoaded } = useGetImage(base64_cover);
 
 	return coverUrl && isImageLoaded ? (
-		<div className="aspect-square">
+		<div className="aspect-square shadow-md">
 			<img
 				src={coverUrl}
 				alt="Song Album Cover"
@@ -22,7 +22,7 @@ export function CoverImage({ base64_cover, className, iconSize = 120 }: Props) {
 	) : (
 		<div
 			className={cn(
-				"w-full flex items-center justify-center rounded-sm aspect-square bg-blend-darken border border-white/20",
+				"w-full flex items-center justify-center rounded-sm aspect-square bg-blend-darken border border-white/20 shadow-md",
 				className
 			)}
 		>

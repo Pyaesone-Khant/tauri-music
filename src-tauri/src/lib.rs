@@ -15,7 +15,7 @@ pub struct MetadataResponse {
 }
 
 #[tauri::command]
-fn get_metadata(file_path: String) -> MetadataResponse {
+async fn get_metadata(file_path: String) -> MetadataResponse {
     let tag = match Tag::read_from_path(&file_path) {
         Ok(tag) => tag,
         Err(_) => {
@@ -46,6 +46,32 @@ fn get_metadata(file_path: String) -> MetadataResponse {
     }
 }
 
+pub struct LyricsResponse {
+    lyrics: String,
+}
+
+#[tauri::command]
+async fn get_song_lyrics(song_title: String, artist_name: String) -> Result<String, String> {
+    // Placeholder implementation
+    let client = lyric_finder::Client::new();
+    let result = client
+        .get_lyric(&song_title)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    match result {
+        lyric_finder::LyricResult::Some {
+            track,
+            artists,
+            lyric,
+        } => Ok(LyricsResponse { lyrics: lyric }.lyrics),
+        lyric_finder::LyricResult::None => {
+            print!("No lyric found for '{}' by '{}'", song_title, artist_name);
+            Err("No lyric found".to_string())
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -53,7 +79,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![get_metadata])
+        .invoke_handler(tauri::generate_handler![get_metadata, get_song_lyrics])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

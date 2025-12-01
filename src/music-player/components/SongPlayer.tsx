@@ -10,15 +10,13 @@ export function SongPlayer() {
 
 	return (
 		<div className="grid grid-cols-3 max-sm:grid-cols-1 gap-4 rounded-md">
-			<div className="shadow-xl">
-				<CoverImage
-					base64_cover={
-						extractSpecificMetadata(currentSong, "base64_cover") as
-							| string
-							| null
-					}
-				/>
-			</div>
+			<CoverImage
+				base64_cover={
+					extractSpecificMetadata(currentSong, "base64_cover") as
+						| string
+						| null
+				}
+			/>
 			<div className="col-span-2 max-sm:col-span-1 flex flex-col p-4 border border-white/20 rounded-md shadow-xl gap-6">
 				<article className="space-y-1">
 					<MarqueeText
