@@ -14,3 +14,10 @@ type Song = {
     metadata?: Metadata;
     timestamp: number;
 }
+
+type LrcLibLyric = {
+    trackName: string,
+    artistName: sting,
+    syncedLyrics: string | null, // Option because sometimes it might be null
+    plainLyrics: string,
+}
