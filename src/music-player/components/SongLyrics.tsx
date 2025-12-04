@@ -21,7 +21,6 @@ export function SongLyrics() {
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		setLyricsSegmentIndex(-1);
 		// Fetch lyrics using Tauri command
 		(async () => {
 			setLoading(true);
@@ -42,43 +41,61 @@ export function SongLyrics() {
 					})
 					.catch((error) => {
 						console.log("error fetching synced lyrics: ", error);
+						setLyricsSegmentIndex(-1);
+						setLyricsSegments([]);
+						activeSegmentRef.current = null;
 						return;
 					})
 					.finally(() => {
 						setLoading(false);
 					});
 			} else {
+				setLyricsSegmentIndex(-1);
 				setLyricsSegments([]);
 				setLoading(false);
+				activeSegmentRef.current = null;
 			}
 		})();
-	}, [currentSong]);
+	}, [currentSong, duration]);
 
 	// Auto-scroll lyrics based on segments
 	useEffect(() => {
-		const currentSegment = lyricsSegments.findIndex(
+		let newLineSegment = lyricsSegments.findIndex(
 			(item) =>
 				currentTime >= item.startTime && currentTime < item.endTime
 		);
 
-		if (currentSegment !== -1 && currentSegment !== lyricsSegmentIndex) {
-			setLyricsSegmentIndex(currentSegment);
+		const lastSegmentIndex = lyricsSegments.length - 1;
+
+		if (newLineSegment === -1 && lastSegmentIndex >= 0) {
+			const lastSegment = lyricsSegments[lastSegmentIndex];
+
+			// If currentTime is past the start of the final line, keep it highlighted indefinitely.
+			if (currentTime >= lastSegment.startTime) {
+				newLineSegment = lastSegmentIndex;
+			}
 		}
 
-		if (activeSegmentRef.current && containerRef.current) {
-			const activeElement = activeSegmentRef.current;
-			const container = containerRef.current;
+		if (newLineSegment !== lyricsSegmentIndex) {
+			if (newLineSegment >= 0 && newLineSegment < lyricsSegments.length) {
+				if (activeSegmentRef.current && containerRef.current) {
+					const activeElement = activeSegmentRef.current;
+					const container = containerRef.current;
 
-			// Calculate how far the line is from the top of the container
-			const offsetTop = activeElement.offsetTop - container.offsetTop;
+					// Calculate how far the line is from the top of the container
+					const offsetTop =
+						activeElement.offsetTop - container.offsetTop;
 
-			// Smoothly scroll to center the active line
-			container.scrollTop =
-				offsetTop -
-				container.clientHeight / 2 +
-				activeElement.clientHeight / 2;
+					// Smoothly scroll to center the active line
+					container.scrollTop =
+						offsetTop -
+						container.clientHeight / 2 +
+						activeElement.clientHeight / 2;
+				}
+				setLyricsSegmentIndex(newLineSegment);
+			}
 		}
-	}, [lyricsSegments, lyricsSegmentIndex, currentTime, duration]);
+	}, [lyricsSegments, lyricsSegmentIndex, currentTime]);
 
 	return (
 		<div
@@ -108,12 +125,16 @@ export function SongLyrics() {
 									{
 										"text-white font-semibold mix-blend-overlay":
 											index === lyricsSegmentIndex,
-										"blur-[1px]":
-											index > lyricsSegmentIndex + 2 ||
-											index < lyricsSegmentIndex - 2,
-										"blur-[1.5px]":
-											index > lyricsSegmentIndex + 4 ||
-											index < lyricsSegmentIndex - 4,
+										"blur-[1px]": checkLyricsPosition(
+											index,
+											lyricsSegmentIndex,
+											2
+										),
+										"blur-[1.5px]": checkLyricsPosition(
+											index,
+											lyricsSegmentIndex,
+											4
+										),
 									}
 								)}
 								onClick={() => {
@@ -180,7 +201,7 @@ function parseLRC(lrcText: string, duration: number) {
 			lyricData.push({
 				startTime: totalSeconds,
 				lyric: text,
-				endTime: 0,
+				endTime: duration, // set end time to duration for the last segment end time. to be at the song duration.
 			});
 		});
 	});
@@ -199,4 +220,15 @@ function parseLRC(lrcText: string, duration: number) {
 	}
 
 	return lyricData;
+}
+
+function checkLyricsPosition(
+	currentLineIndex: number,
+	activeLineIndex: number,
+	distance: number
+) {
+	return (
+		currentLineIndex > activeLineIndex + distance ||
+		currentLineIndex < activeLineIndex - distance
+	);
 }
