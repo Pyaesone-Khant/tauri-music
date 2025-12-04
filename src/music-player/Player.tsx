@@ -10,7 +10,7 @@ import { SongPlayer } from "./components/SongPlayer";
 import "./style.css";
 
 export function Player() {
-	const { currentSong, audioRef, playNext, playPrevious } =
+	const { currentSong, audioRef, playNext, playPrevious, showLyrics } =
 		usePlayerContext();
 
 	const { isImageLoaded } = useGetImage(
@@ -81,14 +81,31 @@ export function Player() {
 			<h1 className="text-3xl font-extrabold mb-8 text-center mx-auto mix-blend-overlay ">
 				Tauri Music
 			</h1>
-			<div className="max-w-6xl mx-auto grid grid-cols-6 max-md:grid-cols-1 gap-8 flex-1">
-				<div className="col-span-4 max-md:col-span-1 space-y-8 flex flex-col">
+			<div
+				className={cn(
+					"max-w-6xl mx-auto grid grid-cols-6 max-md:grid-cols-1 gap-8 flex-1 w-full"
+				)}
+			>
+				<div
+					className={cn(
+						"col-span-4 max-md:col-span-1 space-y-8 flex flex-col",
+						{
+							"col-span-6": !showLyrics,
+						}
+					)}
+				>
 					<SongPlayer />
 					<Playlist />
 				</div>
-				<div className="col-span-2 max-md:col-span-1 flex flex-col">
-					<SongLyrics />
-				</div>
+				{showLyrics && (
+					<div
+						className={cn(
+							"col-span-2 max-md:col-span-1 flex flex-col"
+						)}
+					>
+						<SongLyrics />
+					</div>
+				)}
 			</div>
 		</div>
 	);

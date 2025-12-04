@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import "./App.css";
 import { PlayerProvider } from "./contexts/PlayerContext";
 import { Player } from "./music-player";
+import { LyricsProvider } from "./music-player/contexts/LyricsContext";
 import { theme } from "./services/theme";
 
 function App() {
@@ -29,7 +30,9 @@ function App() {
 		<MantineProvider theme={theme}>
 			<main>
 				<PlayerProvider>
-					<Player />
+					<LyricsProvider>
+						<Player />
+					</LyricsProvider>
 				</PlayerProvider>
 			</main>
 		</MantineProvider>

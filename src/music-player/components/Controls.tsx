@@ -1,6 +1,7 @@
 import { ActionIcon } from "@mantine/core";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { usePlayerContext } from "../../contexts/PlayerContext";
+import { cn } from "../../libs/cn";
 
 export function Controls() {
 	const {
@@ -11,12 +12,14 @@ export function Controls() {
 		playlist,
 		currentPlayMode,
 		handleChangePlayMode,
+		showLyrics,
+		handleShowLyrics,
 	} = usePlayerContext();
 
 	const disabled = playlist.length === 0;
 
 	return (
-		<div className="relative mt-2">
+		<div className="relative mt-2 flex items-center justify-between">
 			<ActionIcon
 				size={"xl"}
 				radius={"xl"}
@@ -24,7 +27,7 @@ export function Controls() {
 				title={currentPlayMode}
 				onClick={handleChangePlayMode}
 				classNames={{
-					root: "absolute! left-0 top-1/2 -translate-y-1/2 mix-blend-luminosity z-2",
+					root: "mix-blend-luminosity",
 				}}
 			>
 				<DynamicIcon name={currentPlayMode} size={20} />
@@ -66,6 +69,24 @@ export function Controls() {
 					<DynamicIcon name="skip-forward" size={20} />
 				</ActionIcon>
 			</div>
+			<ActionIcon
+				size={"xl"}
+				radius={"xl"}
+				aria-label={`Lyrics ${showLyrics ? "Shown" : "Hidden"}`}
+				title={`Lyrics ${showLyrics ? "Shown" : "Hidden"}`}
+				onClick={handleShowLyrics}
+				classNames={{
+					root: "mix-blend-luminosity",
+				}}
+			>
+				<DynamicIcon
+					name="message-square-code"
+					size={20}
+					className={cn("text-primary", {
+						"text-white opacity-100 ": showLyrics,
+					})}
+				/>
+			</ActionIcon>
 		</div>
 	);
 }

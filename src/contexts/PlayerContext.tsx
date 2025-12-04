@@ -1,3 +1,4 @@
+import { useDisclosure } from "@mantine/hooks";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import {
@@ -30,6 +31,8 @@ type PlayerContextType = {
 	setCurrentSongIndex: React.Dispatch<React.SetStateAction<number>>;
 	currentPlayMode: PlayMode;
 	handleChangePlayMode: () => void;
+	showLyrics: boolean;
+	handleShowLyrics: () => void;
 };
 
 const PlayerContext = createContext<PlayerContextType>({
@@ -51,6 +54,8 @@ const PlayerContext = createContext<PlayerContextType>({
 	setCurrentSongIndex: () => {},
 	currentPlayMode: PlayMode.REPEAT,
 	handleChangePlayMode: () => {},
+	showLyrics: false,
+	handleShowLyrics: () => {},
 });
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
@@ -58,6 +63,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	const [currentSongIndex, setCurrentSongIndex] = useState<number>(-1);
 	const [isPlaying, setIsPlaying] = useState<boolean>(false);
 	const [statusMessage, setStatusMessage] = useState<string>("");
+
+	const [showLyrics, { toggle }] = useDisclosure(false);
 
 	// to make current playing song not to change when Dnd Sorting changes was made.
 	const [currentSongPath, setCurrentSongPath] = useState<string | null>(null);
@@ -431,6 +438,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 		setCurrentSongIndex,
 		currentPlayMode,
 		handleChangePlayMode,
+		showLyrics,
+		handleShowLyrics: toggle,
 	};
 
 	return (

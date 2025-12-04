@@ -21,3 +21,9 @@ type LrcLibLyric = {
     syncedLyrics: string | null, // Option because sometimes it might be null
     plainLyrics: string,
 }
+
+type LyricData = {
+    startTime: number;
+    endTime: number;
+    lyric: string;
+};
