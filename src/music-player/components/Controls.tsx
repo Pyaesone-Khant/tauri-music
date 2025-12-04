@@ -72,19 +72,15 @@ export function Controls() {
 			<ActionIcon
 				size={"xl"}
 				radius={"xl"}
-				aria-label={`Lyrics ${showLyrics ? "Shown" : "Hidden"}`}
-				title={`Lyrics ${showLyrics ? "Shown" : "Hidden"}`}
+				aria-label={showLyrics ? "Playlist" : "Lyrics"}
+				title={showLyrics ? "Playlist" : "Lyrics"}
 				onClick={handleShowLyrics}
-				classNames={{
-					root: "mix-blend-luminosity",
-				}}
+				bg={"transparent"}
 			>
 				<DynamicIcon
-					name="message-square-code"
+					name={showLyrics ? "list-music" : "message-square-code"}
 					size={20}
-					className={cn("text-primary", {
-						"text-white opacity-100 ": showLyrics,
-					})}
+					className={cn("mix-blend-overlay")}
 				/>
 			</ActionIcon>
 		</div>

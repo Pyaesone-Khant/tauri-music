@@ -1,4 +1,3 @@
-import { MarqueeText } from "../../components";
 import { usePlayerContext } from "../../contexts/PlayerContext";
 import { extractSpecificMetadata } from "../../libs/utils";
 import { Controls } from "./Controls";
@@ -9,54 +8,39 @@ export function SongPlayer() {
 	const { currentSong } = usePlayerContext();
 
 	return (
-		<div className="grid grid-cols-3 max-sm:grid-cols-1 gap-4 rounded-md">
-			<CoverImage
-				base64_cover={
-					extractSpecificMetadata(currentSong, "base64_cover") as
-						| string
-						| null
-				}
-			/>
-			<div className="col-span-2 max-sm:col-span-1 flex flex-col p-4 border border-white/20 rounded-md shadow-xl gap-6">
-				<article className="space-y-1">
-					<MarqueeText
-						classNames={{
-							text: "text-xl font-semibold whitespace-nowrap mix-blend-lighten",
-						}}
-						isAnimated={false}
-					>
+		<div className="rounded-md md:max-w-lg mx-auto">
+			<div className="grid md:grid-cols-1 grid-cols-3 gap-4">
+				<CoverImage
+					base64_cover={
+						extractSpecificMetadata(currentSong, "base64_cover") as
+							| string
+							| null
+					}
+					className=""
+				/>
+				<article className="space-y-1 col-span-2">
+					<h3 className="text-xl font-semibold whitespace-nowrap mix-blend-lighten">
 						{extractSpecificMetadata(currentSong, "title") ||
 							currentSong?.name ||
 							"Unknown Title"}
-					</MarqueeText>
-					<MarqueeText
-						classNames={{
-							text: "whitespace-nowrap truncate mix-blend-lighten",
-						}}
-						isAnimated={false}
-					>
+					</h3>
+					<p className="whitespace-nowrap truncate mix-blend-lighten">
 						{extractSpecificMetadata(currentSong, "artist") ||
 							"Unknown Artist"}{" "}
 						|{" "}
 						{extractSpecificMetadata(currentSong, "album") ||
 							"Unknown Album"}
-					</MarqueeText>
-					<MarqueeText
-						classNames={{
-							text: "mix-blend-lighten opacity-60",
-						}}
-						isAnimated={false}
-					>
+					</p>
+					<p className="mix-blend-lighten opacity-60">
 						Released:{" "}
 						{extractSpecificMetadata(currentSong, "year") ||
 							"Unknown Year"}
-					</MarqueeText>
+					</p>
 				</article>
-
-				<div className="mt-auto">
-					<PlaybackProgress />
-					<Controls />
-				</div>
+			</div>
+			<div className="mt-6 space-y-4 max-md:fixed max-md:p-6 bottom-0 left-0 w-full z-10">
+				<PlaybackProgress />
+				<Controls />
 			</div>
 		</div>
 	);

@@ -41,6 +41,12 @@
   }
 }
 
+/* hiding scroll bar */
+* {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+}
 
 html {
   overscroll-behavior: none;

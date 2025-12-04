@@ -71,7 +71,7 @@ export const SongCard = memo((props: Song & { index: number }) => {
 									"base64_cover"
 								) as string | null | undefined
 							}
-							className="w-12 bg-primary-100"
+							className="w-12 min-w-12 bg-primary-100"
 							iconSize={20}
 						/>
 						<article className="space-y-0.5 flex-1">

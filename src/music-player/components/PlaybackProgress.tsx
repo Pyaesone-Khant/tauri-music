@@ -14,10 +14,6 @@ export function PlaybackProgress() {
 
 	return (
 		<div className="space-y-2">
-			<div className="flex items-center justify-between text-sm font-mono mix-blend-overlay">
-				<span>{formatTime(currentTime)}</span>
-				<span>-{formatTime(duration - currentTime)}</span>
-			</div>
 			<Slider
 				defaultValue={0}
 				value={currentTime}
@@ -28,6 +24,10 @@ export function PlaybackProgress() {
 				size={"lg"}
 				className=" mix-blend-luminosity"
 			/>
+			<div className="flex items-center justify-between text-sm font-mono mix-blend-overlay">
+				<span>{formatTime(currentTime)}</span>
+				<span>-{formatTime(duration - currentTime)}</span>
+			</div>
 		</div>
 	);
 }

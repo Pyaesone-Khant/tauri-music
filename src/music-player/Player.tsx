@@ -78,34 +78,13 @@ export function Player() {
 						: undefined,
 			}}
 		>
-			<h1 className="text-3xl font-extrabold mb-8 text-center mx-auto mix-blend-overlay ">
-				Tauri Music
-			</h1>
-			<div
-				className={cn(
-					"max-w-6xl mx-auto grid grid-cols-6 max-md:grid-cols-1 gap-8 flex-1 w-full"
-				)}
-			>
-				<div
-					className={cn(
-						"col-span-4 max-md:col-span-1 space-y-8 flex flex-col",
-						{
-							"col-span-6": !showLyrics,
-						}
-					)}
-				>
+			<div className="flex max-lg:flex-col flex-1 gap-4 px-4">
+				<div className="lg:flex-1 lg:self-center">
 					<SongPlayer />
-					<Playlist />
 				</div>
-				{showLyrics && (
-					<div
-						className={cn(
-							"col-span-2 max-md:col-span-1 flex flex-col"
-						)}
-					>
-						<SongLyrics />
-					</div>
-				)}
+				<div className="flex-1 flex">
+					{showLyrics ? <SongLyrics /> : <Playlist />}
+				</div>
 			</div>
 		</div>
 	);

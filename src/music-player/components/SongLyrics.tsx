@@ -1,3 +1,4 @@
+import { useMediaQuery } from "@mantine/hooks";
 import { useEffect, useRef } from "react";
 import { usePlayerContext } from "../../contexts/PlayerContext";
 import { cn } from "../../libs/cn";
@@ -11,6 +12,8 @@ export function SongLyrics() {
 
 	const activeSegmentRef = useRef<HTMLParagraphElement | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
+
+	const isLargerDevice = useMediaQuery("(min-width: 1024px)");
 
 	useEffect(() => {
 		let newLineSegment = lyricsSegments.findIndex(
@@ -39,74 +42,87 @@ export function SongLyrics() {
 					const offsetTop =
 						activeElement.offsetTop - container.offsetTop;
 
+					console.log("offset top: ", offsetTop);
+					console.log("container offset top: ", container.offsetTop);
+					console.log(
+						"active element offset top: ",
+						activeElement.offsetTop
+					);
+					console.log("container height: ", container.clientHeight);
+
 					// Smoothly scroll to center the active line
 					container.scrollTop =
 						offsetTop -
-						container.clientHeight / 2 +
-						activeElement.clientHeight / 2;
+						(isLargerDevice
+							? activeElement.offsetTop / 2 + container.offsetTop
+							: activeElement.clientHeight / 3);
 				}
-				setActiveLineIndex(newLineSegment);
 			}
+			setActiveLineIndex(newLineSegment);
 		}
-	}, [currentTime]);
+	}, [currentTime, isLargerDevice]);
 
 	return (
 		<div
 			ref={containerRef}
-			className="border border-white/20 rounded-md shadow-xl md:max-h-[86.8vh] overflow-y-scroll flex flex-col flex-1 overscroll-none scroll-smooth"
+			className=" max-h-[93vh] max-md:max-h-[65vh] overflow-y-scroll flex-1 flex flex-col mix-blend-overlay scroll-smooth"
 		>
-			<div className="flex-1 flex flex-col mix-blend-overlay scroll-smooth">
-				<div className="sticky top-0 backdrop-blur-3xl bg-black/50 p-4 border-b border-white/20 flex items-center gap-4 justify-between">
-					<h3 className="text-lg font-bold">Lyrics</h3>
-				</div>
-				{loading ? (
-					<p className="self-center my-auto text-sm">
-						Loading lyrics...
-					</p>
-				) : lyricsSegments?.length > 0 ? (
-					<>
-						{lyricsSegments.map((segment, index) => (
-							<p
-								ref={
-									index === activeLineIndex
-										? activeSegmentRef
-										: null
+			{loading ? (
+				<p className="self-center my-auto text-sm animate-ping">
+					Loading lyrics...
+				</p>
+			) : lyricsSegments?.length > 0 ? (
+				<>
+					{lyricsSegments.map((segment, index) => (
+						<p
+							ref={
+								index === activeLineIndex
+									? activeSegmentRef
+									: null
+							}
+							key={index}
+							className={cn(
+								`whitespace-pre-wrap w-fit text-[1.5rem] p-2 transition-colors duration-300 text-white/50 cursor-pointer hover:blur-none hover:text-white hover:font-semibold`,
+								{
+									"text-white font-semibold mix-blend-overlay":
+										index === activeLineIndex,
+									"blur-[1px]": checkLyricsPosition(
+										index,
+										activeLineIndex,
+										2
+									),
+									"blur-[1.5px]": checkLyricsPosition(
+										index,
+										activeLineIndex,
+										4
+									),
 								}
-								key={index}
-								className={cn(
-									`whitespace-pre-wrap text-[1.5rem] p-2 transition-colors duration-300 text-white/50 cursor-pointer hover:blur-none hover:text-white hover:font-semibold`,
-									{
-										"text-white font-semibold mix-blend-overlay":
-											index === activeLineIndex,
-										"blur-[1px]": checkLyricsPosition(
-											index,
-											activeLineIndex,
-											2
-										),
-										"blur-[1.5px]": checkLyricsPosition(
-											index,
-											activeLineIndex,
-											4
-										),
-									}
-								)}
-								onClick={() => {
-									if (!audioRef || !audioRef.current) return;
-									setCurrentTime(segment.startTime);
-									audioRef.current.currentTime =
-										segment.startTime;
-								}}
-							>
-								{segment.lyric}
-							</p>
-						))}
-					</>
-				) : (
-					<p className="self-center my-auto text-sm">
-						No lyrics available for this song.
-					</p>
-				)}
-			</div>
+							)}
+							style={{
+								opacity: checkLyricsPosition(
+									index,
+									activeLineIndex,
+									6
+								)
+									? 0.5
+									: 1,
+							}}
+							onClick={() => {
+								if (!audioRef || !audioRef.current) return;
+								setCurrentTime(segment.startTime);
+								audioRef.current.currentTime =
+									segment.startTime;
+							}}
+						>
+							{segment.lyric}
+						</p>
+					))}
+				</>
+			) : (
+				<p className="self-center my-auto text-sm">
+					No lyrics available for this song.
+				</p>
+			)}
 		</div>
 	);
 }
