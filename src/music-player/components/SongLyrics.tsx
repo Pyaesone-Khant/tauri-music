@@ -1,5 +1,7 @@
 import { useMediaQuery } from "@mantine/hooks";
+import { animate } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { KaraokeLine } from "../../components/KaraokeLine";
 import { usePlayerContext } from "../../contexts/PlayerContext";
 import { cn } from "../../libs/cn";
 import { useLyricsContext } from "../contexts/LyricsContext";
@@ -38,24 +40,22 @@ export function SongLyrics() {
 					const activeElement = activeSegmentRef.current;
 					const container = containerRef.current;
 
-					// Calculate how far the line is from the top of the container
 					const offsetTop =
 						activeElement.offsetTop - container.offsetTop;
 
-					console.log("offset top: ", offsetTop);
-					console.log("container offset top: ", container.offsetTop);
-					console.log(
-						"active element offset top: ",
-						activeElement.offsetTop
-					);
-					console.log("container height: ", container.clientHeight);
-
-					// Smoothly scroll to center the active line
-					container.scrollTop =
+					// Target scroll position
+					const target =
 						offsetTop -
 						(isLargerDevice
-							? activeElement.offsetTop / 2 + container.offsetTop
-							: activeElement.clientHeight / 3);
+							? container.clientHeight / 2 -
+							  activeElement.clientHeight / 2
+							: activeElement.clientHeight);
+
+					animate(container.scrollTop, target, {
+						duration: 0.4,
+						ease: "easeOut",
+						onUpdate: (v) => (container.scrollTop = v),
+					});
 				}
 			}
 			setActiveLineIndex(newLineSegment);
@@ -86,27 +86,8 @@ export function SongLyrics() {
 								{
 									"text-white font-semibold mix-blend-overlay":
 										index === activeLineIndex,
-									"blur-[1px]": checkLyricsPosition(
-										index,
-										activeLineIndex,
-										2
-									),
-									"blur-[1.5px]": checkLyricsPosition(
-										index,
-										activeLineIndex,
-										4
-									),
 								}
 							)}
-							style={{
-								opacity: checkLyricsPosition(
-									index,
-									activeLineIndex,
-									6
-								)
-									? 0.5
-									: 1,
-							}}
 							onClick={() => {
 								if (!audioRef || !audioRef.current) return;
 								setCurrentTime(segment.startTime);
@@ -114,7 +95,10 @@ export function SongLyrics() {
 									segment.startTime;
 							}}
 						>
-							{segment.lyric}
+							<KaraokeLine
+								text={segment.lyric}
+								isActive={index === activeLineIndex}
+							/>
 						</p>
 					))}
 				</>
@@ -124,16 +108,5 @@ export function SongLyrics() {
 				</p>
 			)}
 		</div>
-	);
-}
-
-function checkLyricsPosition(
-	lineIndex: number,
-	activeLineIndex: number,
-	distance: number
-) {
-	return (
-		lineIndex > activeLineIndex + distance ||
-		lineIndex < activeLineIndex - distance
 	);
 }
