@@ -30,10 +30,12 @@ export const LyricsProvider = ({ children }: { children: React.ReactNode }) => {
 		(async () => {
 			setLoading(true);
 			if (currentSong?.metadata?.title && currentSong?.metadata?.artist) {
+				const { title, artist } = currentSong?.metadata;
+
 				// synced song lyrics with timestamps
 				await invoke<LrcLibLyric>("fetch_synced_lyrics", {
-					track: currentSong.metadata.title,
-					artist: currentSong.metadata.artist,
+					track: title?.includes("(") ? title?.split("(")[0] : title,
+					artist: artist,
 				})
 					.then((data) => {
 						const { syncedLyrics } = data;
