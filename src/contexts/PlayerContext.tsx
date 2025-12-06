@@ -33,6 +33,7 @@ type PlayerContextType = {
 	handleChangePlayMode: () => void;
 	showLyrics: boolean;
 	handleShowLyrics: () => void;
+	handleRemoveSong: (path: string) => void;
 };
 
 const PlayerContext = createContext<PlayerContextType>({
@@ -56,6 +57,7 @@ const PlayerContext = createContext<PlayerContextType>({
 	handleChangePlayMode: () => {},
 	showLyrics: false,
 	handleShowLyrics: () => {},
+	handleRemoveSong: () => {},
 });
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
@@ -419,6 +421,31 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 		};
 	}, [audioRef.current?.played, audioRef.current?.paused]);
 
+	const handleRemoveSong = (path: string) => {
+		const isRemovingCurrentSong = currentSongPath === path;
+		if (isRemovingCurrentSong) {
+			const newPlaylist = playlist.filter(
+				(it) => it.path !== currentSongPath && it.path !== path
+			);
+
+			if (newPlaylist.length > 0) {
+				const newSong = newPlaylist[0];
+				onLoadSong(newSong.path);
+			} else {
+				if (audioRef && audioRef.current) {
+					audioRef.current.src = "";
+					audioRef.current = null;
+				}
+				setCurrentSongIndex(-1);
+				setCurrentSongPath(null);
+			}
+			setCurrentTime(0);
+			setPlaylist(newPlaylist);
+		} else {
+			setPlaylist((prev) => prev.filter((it) => it.path !== path));
+		}
+	};
+
 	const contextValue: PlayerContextType = {
 		playlist,
 		setPlaylist,
@@ -440,6 +467,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 		handleChangePlayMode,
 		showLyrics,
 		handleShowLyrics: toggle,
+		handleRemoveSong,
 	};
 
 	return (

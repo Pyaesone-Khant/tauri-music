@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ActionIcon } from "@mantine/core";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { memo } from "react";
 import { MarqueeText } from "../../components";
 import { usePlayerContext } from "../../contexts/PlayerContext";
@@ -15,8 +16,13 @@ export const SongCard = memo((props: Song & { index: number }) => {
 	const { attributes, listeners, setNodeRef, transform, transition } =
 		useSortable({ id: props.path, disabled: index === 0 });
 
-	const { currentSongPath, isPlaying, onLoadSong, playlist } =
-		usePlayerContext();
+	const {
+		currentSongPath,
+		isPlaying,
+		onLoadSong,
+		playlist,
+		handleRemoveSong,
+	} = usePlayerContext();
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
@@ -25,11 +31,11 @@ export const SongCard = memo((props: Song & { index: number }) => {
 
 	return (
 		<div ref={setNodeRef} style={style}>
-			<div className="relative">
+			<div className="relative flex group w-full">
 				<div
 					onClick={() => onLoadSong(path)}
 					className={cn(
-						"flex items-center p-3 rounded-lg cursor-pointer transition border-l-4 border-transparent mix-blend-luminosity gap-2",
+						"flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 border-l-4 border-transparent mix-blend-luminosity w-full gap-2",
 						{
 							"bg-primary-950 border-white font-medium":
 								path === currentSongPath,
@@ -103,6 +109,19 @@ export const SongCard = memo((props: Song & { index: number }) => {
 					{path === currentSongPath && (
 						<SongBarAnimation isPlaying={isPlaying} />
 					)}
+					<ActionIcon
+						className="z-10! group-hover:block! hidden!"
+						variant="subtle"
+						onClick={(e) => {
+							handleRemoveSong(path);
+							e.stopPropagation();
+						}}
+					>
+						<X
+							size={32}
+							className="text-red-950! mix-blend-normal!"
+						/>
+					</ActionIcon>
 				</div>
 			</div>
 		</div>

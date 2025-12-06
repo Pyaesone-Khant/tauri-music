@@ -23,6 +23,8 @@
 		"express": "^5.1.0",
 		"framer-motion": "^12.23.25",
 		"lucide-react": "^0.554.0",
+		"myanmar-tools": "^1.2.0",
+		"rabbit-node": "^1.0.4",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"tailwind-merge": "^3.4.0",

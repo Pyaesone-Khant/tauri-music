@@ -1,9 +1,12 @@
 import { useMediaQuery } from "@mantine/hooks";
 import { animate } from "framer-motion";
+// @ts-ignore
+import { zg2uni } from "rabbit-node/index";
 import { useEffect, useRef } from "react";
 import { KaraokeLine } from "../../components/KaraokeLine";
 import { usePlayerContext } from "../../contexts/PlayerContext";
 import { cn } from "../../libs/cn";
+import { isZawgyiCode } from "../../services/check-zawgyi";
 import { useLyricsContext } from "../contexts/LyricsContext";
 
 export function SongLyrics() {
@@ -96,8 +99,14 @@ export function SongLyrics() {
 							}}
 						>
 							<KaraokeLine
-								text={segment.lyric}
+								text={
+									isZawgyiCode(segment.lyric)
+										? zg2uni(segment.lyric)
+										: segment.lyric
+								}
 								isActive={index === activeLineIndex}
+								index={index}
+								activeLineIndex={activeLineIndex}
 							/>
 						</p>
 					))}
