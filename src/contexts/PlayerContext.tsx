@@ -439,6 +439,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 				setCurrentSongIndex(-1);
 				setCurrentSongPath(null);
 			}
+			setDuration(0);
 			setCurrentTime(0);
 			setPlaylist(newPlaylist);
 		} else {
