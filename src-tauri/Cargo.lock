@@ -4306,6 +4306,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-music"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "id3",
+ "lyric_finder",
+ "reqwest 0.11.27",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "urlencoding",
+]
+
+[[package]]
 name = "tauri-plugin"
 version = "2.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4453,25 +4472,6 @@ dependencies = [
  "webview2-com",
  "windows",
  "wry",
-]
-
-[[package]]
-name = "tauri-test"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "id3",
- "lyric_finder",
- "reqwest 0.11.27",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "urlencoding",
 ]
 
 [[package]]

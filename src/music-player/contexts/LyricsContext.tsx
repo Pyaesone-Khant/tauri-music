@@ -27,7 +27,7 @@ const LyricsContext = createContext<LyricsContextType>({
 });
 
 export const LyricsProvider = ({ children }: { children: React.ReactNode }) => {
-	const { currentSong, duration, setPlaylist, playlist, currentSongPath } =
+	const { currentSong, duration, setPlaylist, currentSongPath } =
 		usePlayerContext();
 
 	const [loading, setLoading] = useState<boolean>(true);

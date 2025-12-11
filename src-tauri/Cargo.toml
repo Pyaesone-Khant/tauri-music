@@ -1,5 +1,5 @@
 [package]
-name = "tauri-test"
+name = "tauri-music"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["Pyaesone Khant"]
