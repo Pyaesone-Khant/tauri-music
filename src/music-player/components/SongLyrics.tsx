@@ -2,6 +2,9 @@ import { useMediaQuery } from "@mantine/hooks";
 import { animate } from "framer-motion";
 // @ts-ignore
 import { zg2uni } from "rabbit-node/index";
+
+import { Button } from "@mantine/core";
+import { Upload } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { KaraokeLine } from "../../components/KaraokeLine";
 import { usePlayerContext } from "../../contexts/PlayerContext";
@@ -10,10 +13,16 @@ import { isZawgyiCode } from "../../services/check-zawgyi";
 import { useLyricsContext } from "../contexts/LyricsContext";
 
 export function SongLyrics() {
-	const { currentTime, audioRef, setCurrentTime } = usePlayerContext();
+	const { currentTime, audioRef, setCurrentTime, currentSong } =
+		usePlayerContext();
 
-	const { loading, lyricsSegments, activeLineIndex, setActiveLineIndex } =
-		useLyricsContext();
+	const {
+		loading,
+		lyricsSegments,
+		activeLineIndex,
+		setActiveLineIndex,
+		handleUploadSongLyrics,
+	} = useLyricsContext();
 
 	const activeSegmentRef = useRef<HTMLParagraphElement | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -68,7 +77,7 @@ export function SongLyrics() {
 	return (
 		<div
 			ref={containerRef}
-			className=" max-h-[93vh] max-md:max-h-[65vh] overflow-y-scroll flex-1 flex flex-col mix-blend-overlay scroll-smooth"
+			className=" max-h-[93vh] max-md:max-h-[65vh] overflow-y-scroll flex-1 flex flex-col scroll-smooth"
 		>
 			{loading ? (
 				<p className="self-center my-auto text-sm animate-ping">
@@ -112,9 +121,29 @@ export function SongLyrics() {
 					))}
 				</>
 			) : (
-				<p className="self-center my-auto text-sm">
-					No lyrics available for this song.
-				</p>
+				<div className="my-auto self-center space-y-3 flex flex-col items-center max-w-md text-center">
+					<div className="mix-blend-overlay space-y-3">
+						<p>No lyrics available for this song.</p>
+
+						<p>
+							You can provide custom lyrics file (formatted with
+							.lrc),
+							<br />
+							if you have one.
+						</p>
+					</div>
+
+					{currentSong && (
+						<Button
+							leftSection={<Upload size={16} />}
+							variant="white"
+							className="mt-6 mix-blend-luminosity!"
+							onClick={handleUploadSongLyrics}
+						>
+							Upload
+						</Button>
+					)}
+				</div>
 			)}
 		</div>
 	);

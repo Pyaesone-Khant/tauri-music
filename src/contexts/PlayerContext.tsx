@@ -323,6 +323,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 					name: path.split(/[/\\]/).pop() ?? path, // Extract the file name
 					metadata,
 					timestamp: Date.now(),
+					lyrics: [],
 				};
 			});
 
@@ -388,7 +389,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const currentSong = useMemo(() => {
 		return playlist.find((song) => song.path === currentSongPath) || null;
-	}, [playlist, currentSongPath]);
+	}, [currentSongPath, playlist]);
 
 	const handleTimeUpdate = () => {
 		if (!audioRef.current) return;

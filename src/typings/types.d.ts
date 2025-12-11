@@ -13,6 +13,7 @@ type Song = {
     name: string;
     metadata?: Metadata;
     timestamp: number;
+    lyrics: LyricData[];
 }
 
 type LrcLibLyric = {

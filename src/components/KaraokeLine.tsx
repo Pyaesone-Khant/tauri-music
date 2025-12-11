@@ -46,7 +46,7 @@ export function KaraokeLine({ text, isActive, index, activeLineIndex }: Props) {
 						active: {
 							opacity: 1,
 							filter: "blur(0px)",
-							transition: { duration: 0.25 },
+							transition: { duration: 0.3 },
 						},
 					}}
 				>
