@@ -5,6 +5,7 @@ import { cn } from "../../libs/cn";
 
 export function Controls() {
 	const {
+		currentSong,
 		playNext,
 		playPrevious,
 		onTogglePlayPause,
@@ -76,6 +77,7 @@ export function Controls() {
 				title={showLyrics ? "Playlist" : "Lyrics"}
 				onClick={handleShowLyrics}
 				bg={"transparent"}
+				disabled={!currentSong}
 			>
 				<DynamicIcon
 					name={showLyrics ? "list-music" : "message-square-code"}

@@ -30,7 +30,7 @@ export const LyricsProvider = ({ children }: { children: React.ReactNode }) => {
 	const { currentSong, duration, setPlaylist, currentSongPath } =
 		usePlayerContext();
 
-	const [loading, setLoading] = useState<boolean>(true);
+	const [loading, setLoading] = useState<boolean>(false);
 	const [activeLineIndex, setActiveLineIndex] = useState<number>(-1);
 	const [lyricsSegments, setLyricsSegments] = useState<LyricData[]>([]);
 
